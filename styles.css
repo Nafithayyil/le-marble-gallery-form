@@ -181,6 +181,40 @@ body.ml .question { font-family: "Noto Sans Malayalam", sans-serif; font-size: 2
   margin-left: auto;
 }
 
+.custom-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  background: var(--gold-soft);
+  animation: rise .2s ease both;
+}
+.custom-panel[hidden] { display: none; }
+.custom-panel .btn { justify-self: end; }
+
+.picker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+.picker input[type=color] {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  flex: none;
+}
+.picker input[type=color]::-webkit-color-swatch-wrapper { padding: 4px; }
+.picker input[type=color]::-webkit-color-swatch { border: 0; border-radius: 8px; }
+.picker input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
+.picker-label { display: block; font-weight: 500; }
+.hex { display: block; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
 .field {
   width: 100%;
   padding: 14px 16px;

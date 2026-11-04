@@ -20,6 +20,8 @@
       required: "Please answer this question to continue.",
       pickOne: "Please select at least one option.",
       badPhone: "Please enter a valid phone number.",
+      pickColour: "Tap to pick a colour",
+      colourName: "Colour name (optional), e.g. Black, Emerald green",
       reviewTitle: "Your enquiry summary",
       reviewHint: "Please check your details before sending.",
       edit: "Edit",
@@ -45,6 +47,8 @@
       required: "തുടരാൻ ദയവായി ഈ ചോദ്യത്തിന് ഉത്തരം നൽകുക.",
       pickOne: "കുറഞ്ഞത് ഒരെണ്ണമെങ്കിലും തിരഞ്ഞെടുക്കുക.",
       badPhone: "ശരിയായ ഫോൺ നമ്പർ നൽകുക.",
+      pickColour: "നിറം തിരഞ്ഞെടുക്കാൻ ടാപ്പ് ചെയ്യുക",
+      colourName: "നിറത്തിന്റെ പേര് (ഓപ്ഷണൽ), ഉദാ. കറുപ്പ്, പച്ച",
       reviewTitle: "നിങ്ങളുടെ അന്വേഷണ സംഗ്രഹം",
       reviewHint: "അയക്കുന്നതിന് മുൻപ് വിവരങ്ങൾ പരിശോധിക്കുക.",
       edit: "മാറ്റുക",
@@ -81,7 +85,9 @@
                 ["3,000–5,000", "3,000–5,000"], ["5,000 above", "5,000-ന് മുകളിൽ"]] },
     { id: "colour", type: "single", label: "Colour preference",
       q: { en: "Colour Preference", ml: "ഇഷ്ടപ്പെട്ട നിറം" },
-      options: [["Grey", "ഗ്രേ", "#9a9893"], ["Beige", "ബീജ്", "#e3d3b8"], ["White", "വെള്ള", "#fbfaf7"]] },
+      options: [["Grey", "ഗ്രേ", "#9a9893"], ["Beige", "ബീജ്", "#e3d3b8"], ["White", "വെള്ള", "#fbfaf7"],
+                ["Choose a colour", "മറ്റൊരു നിറം തിരഞ്ഞെടുക്കുക",
+                 "conic-gradient(#d94f4f, #e3b04b, #6bbf6b, #4b8fe3, #a35fd6, #d94f4f)", "custom"]] },
     { id: "phone", type: "tel", label: "Contact number",
       q: { en: "Contact Number", ml: "ബന്ധപ്പെടാനുള്ള നമ്പർ" },
       autocomplete: "tel" },
@@ -95,7 +101,7 @@
   var bar = document.querySelector(".progress-bar");
   var progress = document.querySelector(".progress");
 
-  var state = { index: -1, answers: {}, returnToReview: false };
+  var state = { index: -1, answers: {}, returnToReview: false, custom: { hex: "#8b6f4e", name: "" } };
 
   function lang() { return state.answers.language === "Malayalam" ? "ml" : "en"; }
 
@@ -190,9 +196,17 @@
       var selected = multi ? (state.answers[q.id] || []).slice() : state.answers[q.id];
       body = el("div", { class: "options" + (q.options.length === 2 ? " two" : ""), role: multi ? "group" : "radiogroup" });
 
+      var customPanel = null;
+      var customValue = function () {
+        var name = state.custom.name.trim();
+        return "Custom: " + (name ? name + " " : "") + "(" + state.custom.hex.toUpperCase() + ")";
+      };
+
       q.options.forEach(function (opt) {
         var value = opt[0];
-        var pressed = multi ? selected.indexOf(value) !== -1 : selected === value;
+        var isCustom = opt[3] === "custom";
+        var pressed = multi ? selected.indexOf(value) !== -1
+          : isCustom ? /^Custom/.test(selected || "") : selected === value;
         var btn = el("button", {
           class: "option" + (multi ? "" : " single"), type: "button", "aria-pressed": String(pressed)
         }, [
@@ -200,20 +214,32 @@
           el("span", { text: l === "ml" ? opt[1] : opt[0] }),
           opt[2] ? el("span", { class: "swatch", style: "background:" + opt[2], "aria-hidden": "true" }) : null
         ]);
+        if (isCustom) {
+          customPanel = buildCustomPanel(pressed, function () {
+            state.answers[q.id] = customValue();
+            advance();
+          });
+        }
         btn.addEventListener("click", function () {
           error.textContent = "";
-          if (multi) {
+          if (isCustom) {
+            body.querySelectorAll(".option").forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
+            customPanel.hidden = false;
+            customPanel.querySelector("input[type=color]").focus();
+          } else if (multi) {
             var at = selected.indexOf(value);
             if (at === -1) selected.push(value); else selected.splice(at, 1);
             btn.setAttribute("aria-pressed", String(at === -1));
           } else {
             state.answers[q.id] = value;
+            if (customPanel) customPanel.hidden = true;
             body.querySelectorAll(".option").forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
             setTimeout(advance, 180);
           }
         });
         body.appendChild(btn);
       });
+      if (customPanel) body.appendChild(customPanel);
 
       if (multi) {
         nextBtn = el("button", { class: "btn btn-primary", type: "button", text: t("next"), onclick: function () {
@@ -241,6 +267,32 @@
         nextBtn || el("span")
       ])
     ]));
+  }
+
+  function buildCustomPanel(open, onDone) {
+    var picker = el("input", { type: "color", id: "f-custom-colour", "aria-label": t("pickColour") });
+    picker.value = state.custom.hex;
+    var hex = el("span", { class: "hex", text: state.custom.hex.toUpperCase() });
+    picker.addEventListener("input", function () {
+      state.custom.hex = picker.value;
+      hex.textContent = picker.value.toUpperCase();
+    });
+
+    var name = el("input", { class: "field", type: "text", placeholder: t("colourName"), "aria-label": t("colourName") });
+    name.value = state.custom.name;
+    name.addEventListener("input", function () { state.custom.name = name.value; });
+    name.addEventListener("keydown", function (e) { if (e.key === "Enter") onDone(); });
+
+    var panel = el("div", { class: "custom-panel" }, [
+      el("label", { class: "picker", for: "f-custom-colour" }, [
+        picker,
+        el("span", null, [el("span", { class: "picker-label", text: t("pickColour") }), hex])
+      ]),
+      name,
+      el("button", { class: "btn btn-primary", type: "button", text: t("next"), onclick: onDone })
+    ]);
+    panel.hidden = !open;
+    return panel;
   }
 
   function display(v) { return Array.isArray(v) ? v.join(", ") : v; }
@@ -341,6 +393,7 @@
           style: "display:block;text-decoration:none" }) : null,
         el("button", { class: "btn btn-ghost", type: "button", text: t("restart"), onclick: function () {
           state.answers = {};
+          state.custom = { hex: "#8b6f4e", name: "" };
           goTo(-1);
         } })
       ])
