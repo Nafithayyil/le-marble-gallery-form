@@ -1,6 +1,6 @@
 # Le Marble Gallery – Enquiry Form
 
-A guided, mobile-friendly enquiry form for Le Marble Gallery. Customers answer 8 quick questions, one at a time, in English or Malayalam. Then they send the enquiry straight to the gallery's WhatsApp, and it can also be logged in a Google Sheet.
+A guided, mobile-friendly enquiry form for Le Marble Gallery. Customers answer 8 quick questions, one at a time, in English or Malayalam. On submit, every answer is sent to a Make (make.com) webhook. Opening a pre-filled WhatsApp chat is optional.
 
 It's a plain static site (HTML/CSS/JS, no build step) and runs on GitHub Pages for free.
 
@@ -25,8 +25,8 @@ Edit `config.js`:
 
 ```js
 window.LMG_CONFIG = {
-  whatsappNumber: "919876543210", // country code + number, digits only
-  sheetEndpoint: ""               // optional Google Apps Script URL
+  webhookUrl: "https://hook.eu2.make.com/...", // Make Custom Webhook URL
+  whatsappNumber: ""                                // optional, e.g. "919876543210"
 };
 ```
 
@@ -37,11 +37,24 @@ window.LMG_CONFIG = {
 3. Under **Build and deployment**, choose **Deploy from a branch**, then pick `main` and `/ (root)`.
 4. After about a minute the form is live at `https://<username>.github.io/<repo>/`.
 
-## Optional: log enquiries to Google Sheets
+## Connect the Make webhook
 
-1. Create a new Google Sheet, then go to **Extensions → Apps Script**.
-2. Paste in the contents of `google-apps-script.gs` and save.
-3. Click **Deploy → New deployment**, choose **Web app**, set *Execute as* to **Me** and *Who has access* to **Anyone**, then deploy.
-4. Copy the web app URL into `sheetEndpoint` in `config.js`, then commit and push.
+1. In Make, create a scenario that starts with **Webhooks → Custom webhook**, add a webhook, and copy its URL.
+2. Paste the URL into `webhookUrl` in `config.js`, then commit and push.
+3. In Make, click **Run once**, then submit one test enquiry from the live form so Make learns the fields.
+4. Add the steps you need after the webhook (Google Sheets, CRM, email, WhatsApp and so on), then turn the scenario on.
 
-The header row is added automatically on the first submission.
+Each submission sends these fields (form-encoded):
+
+| Field | Example |
+|---|---|
+| `submittedAt` | `2026-11-04T10:15:00.000Z` |
+| `name` | `Arun` |
+| `language` | `Malayalam` |
+| `products` | `Italian Marble, Granite` |
+| `application` | `Flooring` |
+| `area` | `1,500–2,500` |
+| `colour` | `Beige` |
+| `phone` | `+91 98765 43210` |
+| `projectType` | `Residential` |
+| `summary` | The full enquiry as readable text |

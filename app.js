@@ -316,19 +316,17 @@
     var wa = whatsappUrl();
     if (wa) window.open(wa, "_blank", "noopener");
 
-    var payload = { submittedAt: new Date().toISOString() };
-    QUESTIONS.forEach(function (q) { payload[q.id] = display(state.answers[q.id]); });
+    // Form-encoded keeps this a "simple" request (no CORS preflight); Make parses each field.
+    var payload = new URLSearchParams({ submittedAt: new Date().toISOString() });
+    QUESTIONS.forEach(function (q) { payload.append(q.id, display(state.answers[q.id])); });
+    payload.append("summary", summaryText());
 
-    var logged = CONFIG.sheetEndpoint
-      ? fetch(CONFIG.sheetEndpoint, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
-        }).catch(function () {})
+    var sent = CONFIG.webhookUrl
+      ? fetch(CONFIG.webhookUrl, { method: "POST", mode: "no-cors", body: payload, keepalive: true })
+          .catch(function () {})
       : Promise.resolve();
 
-    logged.then(renderDone);
+    sent.then(renderDone);
   }
 
   function renderDone() {
