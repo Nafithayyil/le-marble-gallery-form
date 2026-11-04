@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Marble Gallery – Enquiry</title>
+<meta name="description" content="Tell Le Marble Gallery what you're looking for and our team will get back to you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&family=Noto+Sans+Malayalam:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="veins" aria-hidden="true"></div>
+
+  <main class="shell">
+    <header class="brand">
+      <div class="mark" aria-hidden="true">LM</div>
+      <div>
+        <h1>Le Marble Gallery</h1>
+        <p class="tagline" data-i18n="tagline">Automated Customer Assistance</p>
+      </div>
+    </header>
+
+    <section class="card" aria-live="polite">
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0">
+        <div class="progress-bar"></div>
+      </div>
+      <div id="stage"></div>
+    </section>
+
+    <footer class="foot">
+      <span data-i18n="footer">Your details are shared only with the Le Marble Gallery team.</span>
+    </footer>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
