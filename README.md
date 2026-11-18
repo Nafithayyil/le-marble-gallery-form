@@ -2,7 +2,7 @@
 
 A guided, mobile-friendly enquiry form for Le Marble Gallery. Customers answer 8 quick questions, one at a time, in English or Malayalam. On submit, every answer is sent to a Make (make.com) webhook. Opening a pre-filled WhatsApp chat is optional.
 
-It's a plain static site (HTML/CSS/JS, no build step) and runs on GitHub Pages for free.
+It's a plain static site (HTML/CSS/JS, no build step) and runs on GitHub Pages for free. The marble textures are `marble-dark.svg` (header) and `marble-light.svg` (page and colour swatches), so upload them with the other files.
 
 ## Questions
 
